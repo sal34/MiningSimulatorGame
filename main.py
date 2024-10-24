@@ -1,5 +1,5 @@
 #imports
-import btcChainData as btc
+import game_dependencies.btcChainData as btc
 import keyboard
 import random
 import time
@@ -10,7 +10,7 @@ import os
 #Variables of all the game
 
 #Version Declare
-version = "0.0.1b7b" #Beta version phase 7
+version = "0.0.3b11b" #Beta version
 
 #variables #diff, block, oldblock, hash, hashrate, btcs, bill, watt, elettricitycost
 hashrate = 0
@@ -20,13 +20,15 @@ totalhashrate = 0
 #Chain Data and currency local data
 diff, block, oldblock, hash, fdiff, conversion = btc.getData()
 money = 2500.0 #default: 2500
-btcs = 10.00000000 #10^-8
+btcs = 0.00000000 #10^-8
 
 
 #Maintain Costs
 elettricitycost = 0.10 #kW/h
 watt = 0 #Watt consume from the miners
 bill = 0 #Elettricity bill elettricitycost*  med of KW/h
+
+
 
 
 
@@ -40,6 +42,9 @@ shopitems = [{"name": "Bitcoin Miner S19 XP Hyd.", "price": 5911, "consumes": 53
 
 InventoryMiner = []
 
+import game_dependencies.save as save
+
+hashrate, totalhashrate, money, btcs, watt, bill, InventoryMiner = save.loadgame()
 
 #Many Functions:
 
@@ -123,6 +128,7 @@ def Shop():
 #Show Own Miners Func
 def ShowMiners():
     clear()
+    print("|| Press q to quit ||")
     try:
         n=0
         for i in InventoryMiner:
@@ -154,8 +160,8 @@ def ShowData():
         #Function Variables
         timeD = 0
         quit = False
-        diff, block, oldblock, hash = btc.getData()
-        print ('\\ The stats will reload every 15 seconds //')
+        diff, block, oldblock, hash, fdiff, conversion = btc.getData()
+        print ('\\ The stats will reload every 15 seconds, press q to quit. //')
 
         print("||  Actual mining Difficulty: ", diff,
               "\n||  Block to Mine: ", block+1,
@@ -383,6 +389,10 @@ def Menu():
     elif ch == '5':
         Trade()
     elif ch.lower() == 'exit' or ch.lower() == 'quit':
+        print("Saving, don't close..")
+        global hashrate, totalhashrate, money, btcs, watt, bill, InventoryMiner
+        save.savegame(hashrate, totalhashrate, money, btcs, watt, bill, InventoryMiner)
+        print("Saved")
         print('\n\nClosing..')
         quit()
     else:
@@ -398,8 +408,10 @@ clear()
 Menu()
 
 #TODO:
-#Trade btc to usd, enanche some logic
+#Trade btc to usd, enhance some logic
 #other stuff [after or at beta ending] (like sell miner)
-#Enanche mining
+#Enhance mining
 
 #Doing Trade Sys.
+
+#Doing Pool mining
