@@ -10,7 +10,7 @@ import os
 #Variables of all the game
 
 #Version Declare
-version = "0.0.3b11b" #Beta version
+version = "0.0.6b" #Beta version
 
 #variables #diff, block, oldblock, hash, hashrate, btcs, bill, watt, elettricitycost
 hashrate = 0
@@ -218,7 +218,7 @@ def getProbability(fdiff, totalhashrate):
     blockprob = round((((fdiff * 2**32 / (totalhashrate * 10**12)) / (3600)) / 24) * 144) #Good enough for a sim. game
     return blockprob
 
-def solomine(maxblock):
+def startmine(maxblock):
     mineprob = random.randint(0, maxblock)
     if (mineprob == maxblock):
         return True
@@ -233,63 +233,184 @@ def Mining():
     quit = False
     minedblocks = 0
     i = 0
-    blockprob = getProbability(fdiff, totalhashrate)
-    #check if all is already loaded and the player have a miner to start the mining simulation
-    if (diff != 0): #totalhashrate != 0 and
-        while True:
-            totalhashratemod = RandomizeHashrate(totalhashrate)
-            #Clear screen
-            clear()
-            print ("\\ Click q to stop the mining process //")
-            print(f'|| Hash Difficulty: {diff}',
-                  f'\n|| You are mining with: {str(totalhashratemod)} TH/s',
-                  f'\nMined Blocks: {str(minedblocks)}',
-                  f'\nYour mining probability is {blockprob}')
-            
-            #Mine from 7 to 32 * 2 seconds like 7*2=14seconds and it try to mine a block
-            if (i == 5):
-                if (solomine(blockprob)):
-                    print(f'You mined a Bitcoin block!!')
-                    minedblocks = int(minedblocks) + 1
-                    btcs =+ 3.125
-            elif (i > 6):
-                i = 0
-            else:
-                i += 1
-            
-
-            print("\n\n\n--- In beta phase you can mine only in solo ---")
-            
-            #Quit sys.
-            timestamp = int(round(time.time()))
-            while (timeD < 2):
-                timeD = int(round(time.time())) - timestamp
-                #print (timeD)
-                if (keyboard.is_pressed('q')):
-                   quit = True
-                   break
+    poolhashrate = 0
+    
+   # Choose if do solo or pool mining
+    while True:
+        
+        DoSolo = input("Want to mine solo? (y/n): ")
+    
+        if (DoSolo.lower() == "n"):
+            solo = False
+            while True:
+                print("Avaible pool mining: ",
+                      "\n 1. MegaPool ± 200 EH/s",
+                      "\n 2. MagnaPool ± 1.95 PH/s",
+                      "\n 3. GrandPool ± 500 TH/s",
+                      "\n 4. MiniPool ± 5TH/s",
+                      "\n 5. MiniMiners ± 23MH/s")
+                choose = int(input("\n-- Choose pool mining: "))
+                if (choose == 1):
+                    poolhashrate = format(random.uniform(145_000_000, 234_000_000), '.2f')
+                    clear()
+                    break
+                elif (choose == 2):
+                    poolhashrate = format(random.uniform(1_981, 2_454), '.2f')
+                    clear()
+                    break
+                elif (choose == 3):
+                    poolhashrate = format(random.uniform(425, 565), '.2f')
+                    clear()
+                    break
+                elif (choose == 4):
+                    poolhashrate = format(random.uniform(3.8, 5.8), '.2f')
+                    clear()
+                    break
+                elif (choose == 5):
+                    poolhashrate = format(random.uniform(0.00001, 0.00005), '.7f')
+                    clear()
+                    break
                 else:
+                    print("Retry")
+                    clear()   
+            break
+        elif (DoSolo.lower() == "y"):
+            solo = True
+            break
+        else:
+            print("Retry.")
+            clear()
+    print(f'Pool hash: {poolhashrate}')
+    blockprob = getProbability(fdiff, (totalhashrate + float(poolhashrate)))
+    
+
+    if (solo == True):
+        #solo
+        #check if all is already loaded and the player have a miner to start the mining simulation
+        if (diff != 0): #totalhashrate != 0 and
+            while True:
+                totalhashratemod = RandomizeHashrate(totalhashrate)
+                #Clear screen
+                clear()
+                print ("\\ Click q to stop the mining process //")
+                print(f'|| Hash Difficulty: {diff}',
+                      f'\n|| You are mining with: {str(totalhashratemod)} TH/s',
+                      f'\n|| Mined Blocks: {str(minedblocks)}',
+                      f'\n|| Your mining probability is {blockprob}')
+                
+                #Mine from 7 to 32 * 2 seconds like 7*2=14seconds and it try to mine a block
+                if (i == 5):
+                    if (startmine(blockprob)):
+                        print(f'You mined a Bitcoin block!!')
+                        minedblocks = int(minedblocks) + 1
+                        btcs =+ 3.125
+                elif (i > 6):
+                    i = 0
+                else:
+                    i += 1
+                
+    
+                #print("\n\n\n--- In beta phase you can mine only in solo ---")
+                
+                #Quit sys.
+                timestamp = int(round(time.time()))
+                while (timeD < 2):
+                    timeD = int(round(time.time())) - timestamp
+                    #print (timeD)
+                    if (keyboard.is_pressed('q')):
+                       quit = True
+                       break
+                    else:
+                        quit = False
+                        continue
+    
+                if quit:
+                    timeD = 0
                     quit = False
-                    continue
-
-            if quit:
-                timeD = 0
-                quit = False
-                continueshowdata = False
-                Menu()
-            else:
-                timeD = 0
-            #Return totalhashrate var into float to avoid "TypeError: can only concatenate str (not "float") to str".
-            totalhashratemod = float(totalhashratemod)
-
-    elif (diff == 0):
-        print ("Error: Impossible to retrieve difficulty from network.")
-        time.sleep(3)
-        Menu()
+                    continueshowdata = False
+                    Menu()
+                else:
+                    timeD = 0
+                #Return totalhashrate var into float to avoid "TypeError: can only concatenate str (not "float") to str".
+                totalhashratemod = float(totalhashratemod)
+    
+        elif (diff == 0):
+            print ("Error: Impossible to retrieve difficulty from network.")
+            time.sleep(3)
+            Menu()
+        else:
+            print ("Please buy a miner to start mining process.")
+            time.sleep(3)
+            Menu()
     else:
-        print ("Please buy a miner to start mining process.")
-        time.sleep(3)
-        Menu()
+        #pool
+        #check if all is already loaded and the player have a miner to start the mining simulation
+        if (diff != 0): #totalhashrate != 0 and
+            mined = 0
+            while True:
+                if (choose == 1):
+                    workers = random.randint(234, 1614)
+                elif (choose == 2):
+                    workers = random.randint(12, 100)
+                else:
+                    workers = random.randint(3, 30)
+                totalhashratemod = RandomizeHashrate(totalhashrate)
+                #Clear screen
+                clear()
+                print ("\\ Click q to stop the mining process //")
+                print(f'|| Hash Difficulty: {diff}',
+                      f'\n|| You are mining with: {str(totalhashratemod)} TH/s',
+                      f'\n|| Mined Blocks: {str(minedblocks)} ;; Total mined btcs: {mined}',
+                      f'\n|| Pool Hashrate: {str(poolhashrate)}'
+                      f'\n|| Your mining probability is {blockprob}')
+                
+                #Mine from 7 to 32 * 2 seconds like 7*2=14seconds and it try to mine a block
+                if (i == 5):
+                    if (startmine(blockprob)):
+                        print(f'You mined a Bitcoin block!!')
+                        minedblocks = int(minedblocks) + 1
+                        btcs =+ ((3.125/int(workers))/float(poolhashrate)) * float(totalhashrate)
+                        mined = float(mined)
+                        mined +=  ((3.125/int(workers))/float(poolhashrate)) * float(totalhashrate)
+                        mined = format(mined, '.8f')
+                elif (i > 6):
+                    i = 0
+                else:
+                    i += 1
+                
+    
+                #print("\n\n\n--- In beta phase you can mine only in solo ---")
+                
+                #Quit sys.
+                timestamp = int(round(time.time()))
+                while (timeD < 2):
+                    timeD = int(round(time.time())) - timestamp
+                    #print (timeD)
+                    if (keyboard.is_pressed('q')):
+                       quit = True
+                       break
+                    else:
+                        quit = False
+                        continue
+    
+                if quit:
+                    timeD = 0
+                    quit = False
+                    continueshowdata = False
+                    Menu()
+                else:
+                    timeD = 0
+                #Return totalhashrate var into float to avoid "TypeError: can only concatenate str (not "float") to str".
+                totalhashratemod = float(totalhashratemod)
+    
+        elif (diff == 0):
+            print ("Error: Impossible to retrieve difficulty from network.")
+            time.sleep(3)
+            Menu()
+        else:
+            print ("Please buy a miner to start mining process.")
+            time.sleep(3)
+            Menu()
     
 
 #Trading sys. to sell/buy btc
@@ -302,6 +423,7 @@ def Trade():
         clear()
         print ("\\ Click 'q' to quit trade, or 's' to sell all your btc //")
         print (f'\nActual bitcoin conversion is: 1 BTC for {conversion}$')
+        print (f'\nYou have: {format(btcs, ".8f")}₿')
         
         
         
@@ -412,6 +534,4 @@ Menu()
 #other stuff [after or at beta ending] (like sell miner)
 #Enhance mining
 
-#Doing Trade Sys.
-
-#Doing Pool mining
+# Modifiable miners and pools for mining through a config file
